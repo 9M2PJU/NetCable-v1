@@ -1,0 +1,25 @@
+# NetCable requirements for DietPi on Raspberry Pi 1 (ARMv6, 512MB RAM).
+# Pinned for ARMv6 installability (piwheels.org wheels):
+# - fastapi 0.95.1 + pydantic 1.10.20: pydantic v2 needs Rust (pydantic-core)
+#   and ships no armv6 wheel, so the latest FastAPI cannot install on a Pi 1.
+#   1.10.20+ ships a pure-Python wheel (the compiled 1.10.7 armv6l wheel
+#   crashes at import here). App code uses only basic FastAPI features,
+#   .dict() and plain-dict responses, so v1 is compatible.
+# - bcrypt 3.2.2: bcrypt 4.x needs Rust and has no armv6 wheel; 3.2.x is
+#   C-based, compiles with gcc, and works with passlib's bcrypt scheme.
+fastapi==0.95.1
+pydantic==1.10.20
+# NOTE: use >=1.10.20, which ships as a pure-Python wheel. The compiled
+# cp311/armv6l wheel (1.10.7) crashes at import on this box
+# (ModelMetaclass: 'bases' has incorrect type).
+uvicorn
+ping3
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==3.2.2
+python-multipart
+requests
+apscheduler
+pysnmp==4.4.12
+pyasn1<0.6

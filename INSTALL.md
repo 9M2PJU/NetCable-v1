@@ -1,5 +1,8 @@
 # 🛠️ Guia de Instalação do NetCable (TrueNAS)
 
+> 🏠 **DietPi / Raspberry Pi?** Veja `install/dietpi/` — instalação nativa
+> (sem Docker) com `install/dietpi/install.sh`. Detalhes no fim deste arquivo.
+
 Este guia explica como instalar o NetCable no seu servidor TrueNAS usando Docker. O sistema irá rodar de forma isolada e salvar os dados (banco de dados) localmente no seu servidor.
 
 ## 📋 Pré-requisitos
@@ -45,3 +48,33 @@ Windows: Pode precisar liberar o ICMP (ping) no Firewall do Windows.
 Switches "Burros": Cadastre como "Sem IP" (visual).
 
 Documento gerado e mantido pela equipe NetCable.
+
+---
+
+## 🏠 Instalação no DietPi (Raspberry Pi 1 / ARMv6, sem Docker)
+
+As imagens GHCR são amd64-only e o Pi 1 não roda Docker de forma útil,
+então a instalação é nativa: backend Python (systemd) + frontend estático
+(nginx). Arquivos em `install/dietpi/`.
+
+**No Pi (usuário `dietpi`):**
+```bash
+bash ~/netcable/install.sh
+```
+
+O que o script faz:
+1. Instala nginx, venv e ferramentas de compilação via APT.
+2. Cria `/home/dietpi/netcable/venv` e instala
+   `install/dietpi/requirements-dietpi.txt`.
+3. Gera `/home/dietpi/netcable/.env` com `ADMIN_USER`/`ADMIN_PASSWORD`.
+4. Ativa o serviço `netcable-backend` (uvicorn em `127.0.0.1:8000`).
+5. Serve o frontend na porta **3080** com proxy de `/api/` para o backend.
+
+**Acesso:** `http://IP_DO_PI:3080` (senha em `/home/dietpi/netcable/.env`).
+**Banco SQLite:** `/home/dietpi/netcable/backend/data/netcable.db`.
+
+**Por que as versões são pinadas** (`requirements-dietpi.txt`):
+- `fastapi==0.95.1` + `pydantic==1.10.20` — o pydantic v2 (pydantic-core,
+  Rust) não tem wheel para ARMv6; a 1.10.20 usa wheel puro-Python.
+- `bcrypt==3.2.2` — a 4.x exige Rust; a 3.2.x compila com gcc e funciona
+  com o passlib usado em `backend/app/main.py`.
